@@ -118,6 +118,17 @@ class AttrListTreeprocessor(Treeprocessor):
                         if isheader(elem):
                             # clean up trailing #s
                             elem[-1].tail = elem[-1].tail.rstrip('#').rstrip()
+                elif elem.tag == 'pre':
+                    # special case: is a code block
+                    idx = len(elem[-1].text)
+                    found = ''
+                    while len(found) < 1 and idx > 0:
+                        idx = elem[-1].text.rfind('\n', 0, idx)
+                        found = elem[-1].text[idx:].strip()
+                    m = self.INLINE_RE.search(found)
+                    if m:
+                        self.assign_attrs(elem, m.group(1))
+                        elem[-1].text = elem[-1].text[:idx + m.start()]
                 elif elem.text:
                     # no children. Get from text.
                     m = RE.search(elem.text)
